@@ -1,0 +1,47 @@
+# C++ build artifacts
+cpp-engine/build/
+cpp-engine/output/
+*.o
+*.obj
+*.exe
+*.out
+CMakeCache.txt
+CMakeFiles/
+
+# Java build artifacts
+java-services/**/target/
+*.class
+*.jar
+*.war
+
+# Python
+python-analytics/venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+python-analytics/data/*.db
+python-analytics/models/*.pkl
+python-analytics/data/*.csv
+.pytest_cache/
+
+# Node / React
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
