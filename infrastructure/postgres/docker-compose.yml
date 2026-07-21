@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aigo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aigo
+      POSTGRES_PASSWORD: aigo_pass
+      POSTGRES_DB: aigo
+    ports:
+      - "5433:5432"
+    volumes:
+      - aigo-postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  aigo-postgres-data:

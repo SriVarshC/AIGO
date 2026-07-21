@@ -15,6 +15,10 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (matchRepository.count() > 0) {
+            System.out.println("[AIGO] Match data already present - skipping seed");
+            return;
+        }
         LocalDateTime base = LocalDateTime.of(2026, 6, 25, 18, 0, 0);
         matchRepository.save(new Match("MATCH_001", 5L, "Nova",  6L, "Byte",
             "Nova",  "Arena 1", 6, 180, base));

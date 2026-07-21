@@ -14,6 +14,10 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (playerRepository.count() > 0) {
+            System.out.println("[AIGO] Player data already present - skipping seed");
+            return;
+        }
         playerRepository.save(new Player("Titan", "US-EAST", 1805, 53, 33, 20, 642, 318));
         playerRepository.save(new Player("Nexus", "US-EAST", 1665, 39, 23, 16, 498, 271));
         playerRepository.save(new Player("Surge", "EU-WEST", 1428, 26, 12, 14, 301, 289));

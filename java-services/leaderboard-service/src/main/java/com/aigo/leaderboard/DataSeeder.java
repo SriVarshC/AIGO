@@ -14,6 +14,10 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (leaderboardRepository.count() > 0) {
+            System.out.println("[AIGO] Leaderboard data already present - skipping seed");
+            return;
+        }
         leaderboardRepository.save(new LeaderboardEntry(1L, "Titan", "US-EAST", 1805, "DIAMOND",  33, 20, 53));
         leaderboardRepository.save(new LeaderboardEntry(2L, "Nexus", "US-EAST", 1665, "PLATINUM", 23, 16, 39));
         leaderboardRepository.save(new LeaderboardEntry(3L, "Surge", "EU-WEST", 1428, "GOLD",     12, 14, 26));
