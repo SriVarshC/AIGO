@@ -3,6 +3,8 @@ package com.aigo.player.service;
 import com.aigo.player.model.Player;
 import com.aigo.player.repository.PlayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
@@ -12,10 +14,12 @@ public class PlayerService {
     @Autowired
     private PlayerRepository playerRepository;
 
+    @Cacheable("players")
     public List<Player> getAllPlayers() {
         return playerRepository.findAll();
     }
 
+    @Cacheable(value = "players", key = "#id")
     public Optional<Player> getPlayerById(Long id) {
         return playerRepository.findById(id);
     }
@@ -24,10 +28,12 @@ public class PlayerService {
         return playerRepository.findByName(name);
     }
 
+    @CacheEvict(value = {"players", "playerStats", "playersByRegion"}, allEntries = true)
     public Player createPlayer(Player player) {
         return playerRepository.save(player);
     }
 
+    @CacheEvict(value = {"players", "playerStats", "playersByRegion"}, allEntries = true)
     public Optional<Player> updatePlayer(Long id, Player updated) {
         return playerRepository.findById(id).map(p -> {
             p.setName(updated.getName());
@@ -42,6 +48,7 @@ public class PlayerService {
         });
     }
 
+    @CacheEvict(value = {"players", "playerStats", "playersByRegion"}, allEntries = true)
     public boolean deletePlayer(Long id) {
         if (playerRepository.existsById(id)) {
             playerRepository.deleteById(id);
@@ -50,6 +57,7 @@ public class PlayerService {
         return false;
     }
 
+    @Cacheable(value = "playerStats", key = "#id")
     public Optional<Map<String, Object>> getPlayerStats(Long id) {
         return playerRepository.findById(id).map(p -> {
             Map<String, Object> stats = new LinkedHashMap<>();
@@ -73,6 +81,7 @@ public class PlayerService {
         });
     }
 
+    @CacheEvict(value = {"players", "playerStats", "playersByRegion"}, allEntries = true)
     public Optional<Player> updateElo(Long id, int newElo) {
         return playerRepository.findById(id).map(p -> {
             p.setEloRating(newElo);
@@ -91,6 +100,7 @@ public class PlayerService {
         return "IRON";
     }
 
+    @Cacheable(value = "playersByRegion", key = "#region")
     public List<Player> getPlayersByRegion(String region) {
         return playerRepository.findByRegion(region);
     }

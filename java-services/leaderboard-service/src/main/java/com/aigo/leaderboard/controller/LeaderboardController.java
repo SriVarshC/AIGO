@@ -2,6 +2,7 @@ package com.aigo.leaderboard.controller;
 
 import com.aigo.leaderboard.model.LeaderboardEntry;
 import com.aigo.leaderboard.service.LeaderboardService;
+import com.aigo.leaderboard.service.LiveLeaderboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,9 @@ public class LeaderboardController {
 
     @Autowired
     private LeaderboardService leaderboardService;
+
+    @Autowired
+    private LiveLeaderboardService liveLeaderboardService;
 
     @GetMapping("/health")
     public Map<String, String> health() {
@@ -50,5 +54,19 @@ public class LeaderboardController {
     @PostMapping
     public LeaderboardEntry addOrUpdateEntry(@RequestBody LeaderboardEntry entry) {
         return leaderboardService.addOrUpdateEntry(entry);
+    }
+
+    // Real-time reads served directly from the Redis sorted set (ZSET),
+    // O(log N) instead of a Postgres ORDER BY scan.
+    @GetMapping("/live/top/{n}")
+    public List<Map<String, Object>> getLiveTopN(@PathVariable int n) {
+        return liveLeaderboardService.getTopN(n);
+    }
+
+    @GetMapping("/live/player/{playerId}")
+    public ResponseEntity<Map<String, Object>> getLivePlayerRank(@PathVariable Long playerId) {
+        return liveLeaderboardService.getPlayerRank(playerId)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 }

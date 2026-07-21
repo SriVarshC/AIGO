@@ -3,6 +3,8 @@ package com.aigo.leaderboard.service;
 import com.aigo.leaderboard.model.LeaderboardEntry;
 import com.aigo.leaderboard.repository.LeaderboardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,6 +15,10 @@ public class LeaderboardService {
     @Autowired
     private LeaderboardRepository leaderboardRepository;
 
+    @Autowired
+    private LiveLeaderboardService liveLeaderboardService;
+
+    @Cacheable("rankedLeaderboard")
     public List<Map<String, Object>> getRankedLeaderboard() {
         List<LeaderboardEntry> entries = leaderboardRepository.findAllByOrderByEloRatingDesc();
         List<Map<String, Object>> result = new ArrayList<>();
@@ -36,10 +42,12 @@ public class LeaderboardService {
         return result;
     }
 
+    @Cacheable(value = "topNLeaderboard", key = "#n")
     public List<Map<String, Object>> getTopN(int n) {
         return getRankedLeaderboard().stream().limit(n).collect(Collectors.toList());
     }
 
+    @Cacheable(value = "leaderboardByRegion", key = "#region")
     public List<Map<String, Object>> getLeaderboardByRegion(String region) {
         List<LeaderboardEntry> entries =
             leaderboardRepository.findByRegionOrderByEloRatingDesc(region);
@@ -60,8 +68,9 @@ public class LeaderboardService {
         return result;
     }
 
+    @CacheEvict(value = {"rankedLeaderboard", "topNLeaderboard", "leaderboardByRegion", "leaderboardEntry"}, allEntries = true)
     public LeaderboardEntry addOrUpdateEntry(LeaderboardEntry entry) {
-        return leaderboardRepository.findByPlayerId(entry.getPlayerId())
+        LeaderboardEntry saved = leaderboardRepository.findByPlayerId(entry.getPlayerId())
             .map(existing -> {
                 existing.setPlayerName(entry.getPlayerName());
                 existing.setRegion(entry.getRegion());
@@ -73,8 +82,11 @@ public class LeaderboardService {
                 return leaderboardRepository.save(existing);
             })
             .orElseGet(() -> leaderboardRepository.save(entry));
+        liveLeaderboardService.syncEntry(saved);
+        return saved;
     }
 
+    @Cacheable(value = "leaderboardEntry", key = "#playerId")
     public Optional<LeaderboardEntry> getEntryByPlayerId(Long playerId) {
         return leaderboardRepository.findByPlayerId(playerId);
     }
